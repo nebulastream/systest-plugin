@@ -12,6 +12,8 @@
     limitations under the License.
 */
 
+package systest;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;

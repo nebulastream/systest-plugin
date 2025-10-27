@@ -12,6 +12,8 @@
     limitations under the License.
 */
 
+package systest;
+
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;

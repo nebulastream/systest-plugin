@@ -12,6 +12,8 @@
     limitations under the License.
 */
 
+package systest;
+
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import org.jetbrains.annotations.NotNull;
