@@ -12,6 +12,8 @@
     limitations under the License.
 */
 
+package systest;
+
 import com.intellij.openapi.options.Configurable;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;

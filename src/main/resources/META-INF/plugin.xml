@@ -1,29 +1,43 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>com.example.NES-Systest-Runner</id>
+    <id>nebula.stream.NES-Systest-Runner</id>
 
     <!-- Public plugin name should be written in Title Case.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
     <name>NES-Systest-Runner</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor url="https://www.yourcompany.com">YourCompany</vendor>
+    <vendor email="nebulastream@dima.tu-berlin.de" url="https://nebula.stream/">NebulaStream</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-        Enter short description for your plugin here.<br>
-        <em>most HTML tags may be used</em>
-    ]]></description>
+    Plugin that adds an Action performing the systest command on '.test' files.<br>
+  ]]></description>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
-    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.xdebugger</depends>
+    <depends>com.intellij.modules.clion.ide</depends>
+    <depends>com.intellij.modules.cidr.ide</depends>
+    <depends>com.intellij.cidr.base</depends>
+    <depends>com.intellij.clion</depends>
+    <depends>com.intellij.modules.clion.cmake</depends>
+    <depends>com.intellij.modules.cmake</depends>
+    <depends>com.intellij.modules.cmake</depends>
+    <depends>com.intellij.modules.json</depends>
+    <depends>com.intellij.modules.clion</depends>
 
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-
+        <applicationConfigurable id="SysTestRunnerSettings" instance="systest.PluginSettingsConfigurable" displayName="NES-Systest-Runner" groupId="tools"/>
+        <applicationService serviceImplementation="systest.PluginSettings"/>
+        <!-- <codeInsight.lineMarkerProvider language="SysTestLanguage" implementationClass="systest.SysTestLineMarkerProvider"/> -->
+        <codeInsight.lineMarkerProvider implementationClass="systest.SysTestLineMarkerProvider"/>
+        <!--<fileType name="System Test File" implementationClass="systest.SysTestFileType" extensions="test;test_disabled;test.disabled"/>-->
     </extensions>
 </idea-plugin>

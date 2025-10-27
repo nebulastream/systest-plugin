@@ -12,6 +12,8 @@
     limitations under the License.
 */
 
+package systest;
+
 import com.intellij.lang.Language;
 
 public class SysTestLanguage extends Language {

@@ -12,6 +12,8 @@
     limitations under the License.
 */
 
+package systest;
+
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.execution.*;
