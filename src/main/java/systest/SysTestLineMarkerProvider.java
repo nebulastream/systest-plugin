@@ -20,6 +20,7 @@ import com.intellij.execution.*;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.ui.*;
+import com.intellij.lang.Language;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -87,6 +88,10 @@ public class SysTestLineMarkerProvider implements LineMarkerProvider  {
 
         /// General Gutter Icon that runs all test in current file
         PsiElement firstElement = file.getFirstChild();
+
+        Language lang = firstElement.getLanguage();
+        System.out.println("File Language ID: " + lang.getID());
+
         if (firstElement != null) {
             /// Get the range of the first line
             int firstLineEndOffset = fileText.indexOf('\n');
