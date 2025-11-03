@@ -37,8 +37,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable id="SysTestRunnerSettings" instance="systest.PluginSettingsConfigurable" displayName="NES-Systest-Runner" groupId="tools"/>
         <applicationService serviceImplementation="systest.PluginSettings"/>
-        <!-- <codeInsight.lineMarkerProvider language="SysTestLanguage" implementationClass="systest.SysTestLineMarkerProvider"/> -->
-        <codeInsight.lineMarkerProvider implementationClass="systest.SysTestLineMarkerProvider"/>
-        <!--<fileType name="System Test File" implementationClass="systest.SysTestFileType" extensions="test;test_disabled;test.disabled"/>-->
+        <!-- We use the language with ID "TEXT" which is used by the systest files. This is the language used by the filetypes of the Systest SyntaxHighlighter -->
+        <codeInsight.lineMarkerProvider implementationClass="systest.SysTestLineMarkerProvider" language="TEXT"/>
     </extensions>
 </idea-plugin>
