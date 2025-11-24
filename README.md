@@ -31,6 +31,15 @@ that will run/debug a single specific test within that file or all tests within 
 - To configure the program arguments, simply edit them in the "systest" configuration
 - NOTE: changes in "systest_plugin" are temporary and will be overwritten
 
+### Build Instructions
+To build the plugin, the following steps are necessary.
+To use the plugin in Clion, we require to create a zip containing all necessary files to manually install the plugin.
+You can either use an ide to build and export the new changes or run the following command
+```./gradlew buildPlugin```
+
+Afterward, you will find a new `.zip` under `build/distribution`.
+
+
 ### Troubleshooting
 - If there is no 'systest' configuration in your run/debug configurations, even after the CMake project has been reloaded,
   you might need to resolve any potential conflicts that lead to CLion not generating the Run/Debug configurations from the target.
