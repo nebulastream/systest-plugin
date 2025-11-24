@@ -18,12 +18,8 @@ repositories {
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
     intellijPlatform {
-        clion("2025.2.2")
-
-        // Add necessary plugin dependencies for compilation here, example:
+        clion("2025.2")
         bundledPlugin("com.intellij.clion")
-        bundledPlugin("com.intellij.modules.cidr.lang")
-        bundledPlugin("com.intellij.cidr.lang")
         bundledPlugin("com.intellij.clion.cmake")
     }
 }
@@ -31,7 +27,8 @@ dependencies {
 intellijPlatform {
     pluginConfiguration {
         ideaVersion {
-            sinceBuild = "251"
+            sinceBuild = "252"
+            untilBuild = "252.*"
         }
 
         changeNotes = """
@@ -43,13 +40,13 @@ intellijPlatform {
 tasks {
     // Set the JVM compatibility versions
     withType<JavaCompile> {
-        sourceCompatibility = "21"
-        targetCompatibility = "21"
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
     }
 }
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
