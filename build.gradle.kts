@@ -22,8 +22,6 @@ dependencies {
 
         // Add necessary plugin dependencies for compilation here, example:
         bundledPlugin("com.intellij.clion")
-        bundledPlugin("com.intellij.modules.cidr.lang")
-        bundledPlugin("com.intellij.cidr.lang")
         bundledPlugin("com.intellij.clion.cmake")
     }
 }
