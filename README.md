@@ -4,11 +4,13 @@ Adds interactable gutter icons for each System-Level Test .test file,
 that will run/debug a single specific test within that file or all tests within that file
 
 ### How to setup in CLion
-- Go to "IDE and Project Settings" and select "Plugins..." from the drop-down menu
-- Go to "Plugins" (Host) if using remote development
+- Go to the releases section: https://github.com/nebulastream/systest-plugin/releases/
+- Download the "NES-Systest-Runner-<VERSION>".zip folder from the latest release
+- In CLion, Go to "IDE and Project Settings" and select "Plugins..." from the drop-down menu
+- Go to "Plugins" / "Plugins (Host)", if using remote development
 - Uninstall the NES-Systest-Runner plugin if an old version exists (requires restart)
 - Click on the settings icon and select "Install Plugin from Disk..." from the drop-down menu
-- Navigate to "nes-systests/utils/SystestPlugin/NES-Systest-Runner-1.2-SNAPSHOT.zip" and select it
+- Navigate to your downloaded "NES-Systest-Runner-<VERSION>".zip folder and select it
 - Install the plugin (does not require restart)
 
 ### How the plugin works
