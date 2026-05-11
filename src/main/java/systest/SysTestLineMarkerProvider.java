@@ -21,6 +21,7 @@ import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.ui.*;
 import com.intellij.lang.Language;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -57,6 +58,8 @@ import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration;
 
 public class SysTestLineMarkerProvider implements LineMarkerProvider  {
 
+    private static final Logger LOG = Logger.getInstance(SysTestLineMarkerProvider.class);
+
     @Nullable
     @Override
     public LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement element) {
@@ -86,27 +89,28 @@ public class SysTestLineMarkerProvider implements LineMarkerProvider  {
 
         int systestIndex = 1;
 
+        Project project = file.getProject();
+        String fileName = file.getVirtualFile().getName();
+
         /// General Gutter Icon that runs all test in current file
-        PsiElement firstElement = file.getFirstChild();
-        if (firstElement != null) {
-            /// Get the range of the first line
-            int firstLineEndOffset = fileText.indexOf('\n');
-            if (firstLineEndOffset == -1) {
-                firstLineEndOffset = fileText.length();
-            }
-
-            TextRange firstLineRange = new TextRange(0, firstLineEndOffset);
-
-            LineMarkerInfo<PsiElement> firstLineMarkerInfo = new LineMarkerInfo<>(
-                    firstElement,
-                    firstLineRange,
-                    AllIcons.Actions.RunAll,
-                    psiElement -> "Run All System Tests in " + file.getVirtualFile().getName(),
-                    (e, elt) -> { startRunSysTest(elt.getProject(), false, file, 0); },
-                    GutterIconRenderer.Alignment.CENTER
-            );
-            result.add(firstLineMarkerInfo);
+        /// Get the range of the first line
+        int firstLineEndOffset = fileText.indexOf('\n');
+        if (firstLineEndOffset == -1) {
+            firstLineEndOffset = fileText.length();
         }
+
+        TextRange firstLineRange = new TextRange(0, firstLineEndOffset);
+
+        LineMarkerInfo<PsiFile> firstLineMarkerInfo = new LineMarkerInfo<>(
+                file,
+                firstLineRange,
+                AllIcons.Actions.RunAll,
+                psiElement -> "Run All System Tests in " + fileName,
+                (e, elt) -> startRunSysTest(project, false, elt, 0),
+                GutterIconRenderer.Alignment.CENTER,
+                () -> "Run all system tests in " + fileName
+        );
+        result.add(firstLineMarkerInfo);
 
         while (matcher.find()) {
 
@@ -119,32 +123,30 @@ public class SysTestLineMarkerProvider implements LineMarkerProvider  {
                 lineEndOffset = fileText.length();
             }
 
-            /// Find the element that corresponds to the start of the line
-            PsiElement lineElement = file.findElementAt(lineStartOffset);
-            if (lineElement == null) continue;
-
             TextRange lineTextRange = new TextRange(lineStartOffset, lineEndOffset);
             int currentSystestIndex = systestIndex;
 
             /// Create the LineMarkerInfo for the gutter icon
-            LineMarkerInfo<PsiElement> lineMarkerInfo = new LineMarkerInfo<>(
-                    lineElement,
+            LineMarkerInfo<PsiFile> lineMarkerInfo = new LineMarkerInfo<>(
+                    file,
                     lineTextRange,
                     AllIcons.Actions.Execute,
                     psiElement -> "Run System Test " + currentSystestIndex,
-                    (e, elt) -> { startRunSysTest(elt.getProject(), false, file, currentSystestIndex); },
-                    GutterIconRenderer.Alignment.CENTER
+                    (e, elt) -> startRunSysTest(project, false, elt, currentSystestIndex),
+                    GutterIconRenderer.Alignment.CENTER,
+                    () -> "Run system test " + currentSystestIndex
             );
             result.add(lineMarkerInfo);
 
             /// Create the LineMarkerInfo for the gutter icon, debugging variant
-            LineMarkerInfo<PsiElement> lineMarkerInfoDebug = new LineMarkerInfo<>(
-                    lineElement,
+            LineMarkerInfo<PsiFile> lineMarkerInfoDebug = new LineMarkerInfo<>(
+                    file,
                     lineTextRange,
                     AllIcons.Actions.StartDebugger,
                     psiElement -> "Debug System Test " + currentSystestIndex,
-                    (e, elt) -> { startRunSysTest(elt.getProject(), true, file, currentSystestIndex); },
-                    GutterIconRenderer.Alignment.LEFT
+                    (e, elt) -> startRunSysTest(project, true, elt, currentSystestIndex),
+                    GutterIconRenderer.Alignment.LEFT,
+                    () -> "Debug system test " + currentSystestIndex
             );
             result.add(lineMarkerInfoDebug);
 
@@ -156,6 +158,8 @@ public class SysTestLineMarkerProvider implements LineMarkerProvider  {
     /// It finds the "systest" configuration, makes a "systest_plugin" copy and modifies the program arguments
     /// Then run/debug the plugin configuration
     public static void startRunSysTest(Project project, boolean runDebugger, PsiFile file, int testIndex) {
+
+        LOG.info("Gutter click: file=" + file.getVirtualFile().getName() + " testIndex=" + testIndex + " debug=" + runDebugger);
 
         /// Save File to ensure recent changes apply to System Test run
         saveFile(file);
@@ -177,6 +181,11 @@ public class SysTestLineMarkerProvider implements LineMarkerProvider  {
         var content = contentFactory.createContent(consoleView.getComponent(), "Command Output", false);
         toolWindow.getContentManager().addContent(content);
 
+        toolWindow.activate(null);
+        toolWindow.show(null);
+        consoleView.print("Running system test " + (testIndex == 0 ? "(all)" : "#" + testIndex)
+                + " from " + file.getVirtualFile().getName() + "...\n", ConsoleViewContentType.NORMAL_OUTPUT);
+
         try {
             /// Find the "systest" Run/Debug configuration
             RunManager runManager = RunManager.getInstance(project);
@@ -188,11 +197,7 @@ public class SysTestLineMarkerProvider implements LineMarkerProvider  {
                     .orElse(null);
 
             if(runnerAndConfigurationSettings == null){
-                toolWindow.activate(null);
                 consoleView.print("Could not find the 'systest' Run/Debug configuration. Reloading CMake... \n", ConsoleViewContentType.ERROR_OUTPUT);
-                toolWindow.show(null);
-
-                CMakeWorkspace cMakeWorkspace = CMakeWorkspace.getInstance(project);
 
                 MessageBusConnection connection = project.getMessageBus().connect();
 
@@ -202,20 +207,24 @@ public class SysTestLineMarkerProvider implements LineMarkerProvider  {
                         if (canceled) {
                             consoleView.print("CMake Reload canceled. \n", ConsoleViewContentType.ERROR_OUTPUT);
                         }
-                        RunnerAndConfigurationSettings runnerAndConfigurationSettings = runManager
+                        RunnerAndConfigurationSettings settingsAfterReload = runManager
                                 .getAllSettings()
                                 .stream()
                                 .filter(confsettings -> "systest".equals(confsettings.getName()))
                                 .findFirst()
                                 .orElse(null);
-                        if(runnerAndConfigurationSettings == null){
+                        if(settingsAfterReload == null){
                             consoleView.print("Could not find 'systest' configuration after CMake reload. \n " +
                                     "Please ensure that CMake can create the Run/Debug Configuration from the 'systest' target " +
                                     "or create the configuration manually if it is missing.", ConsoleViewContentType.ERROR_OUTPUT);
                             return;
                         }
 
-                        runSysTest(project, runDebugger, runnerAndConfigurationSettings, file, testIndex);
+                        try {
+                            runSysTest(project, runDebugger, settingsAfterReload, file, testIndex);
+                        } catch (Throwable t) {
+                            reportError(consoleView, t);
+                        }
                         connection.disconnect();
                     }
                 });
@@ -227,13 +236,24 @@ public class SysTestLineMarkerProvider implements LineMarkerProvider  {
                 runSysTest(project, runDebugger, runnerAndConfigurationSettings, file, testIndex);
             }
         }
-        catch(Exception e) {
-            toolWindow.activate(null);
-            consoleView.print("Error: " + e.getMessage() + "\n", ConsoleViewContentType.ERROR_OUTPUT);
-            for (StackTraceElement element : e.getStackTrace()) {
-                consoleView.print(element.toString() + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+        catch(Throwable t) {
+            reportError(consoleView, t);
+        }
+    }
+
+    private static void reportError(ConsoleView consoleView, Throwable t) {
+        LOG.warn("System test launch failed", t);
+        consoleView.print(t.getClass().getName() + ": " + t.getMessage() + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+        for (StackTraceElement element : t.getStackTrace()) {
+            consoleView.print("\tat " + element + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+        }
+        Throwable cause = t.getCause();
+        while (cause != null) {
+            consoleView.print("Caused by: " + cause.getClass().getName() + ": " + cause.getMessage() + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+            for (StackTraceElement element : cause.getStackTrace()) {
+                consoleView.print("\tat " + element + "\n", ConsoleViewContentType.ERROR_OUTPUT);
             }
-            toolWindow.show(null);
+            cause = cause.getCause();
         }
     }
     public static void runSysTest(
